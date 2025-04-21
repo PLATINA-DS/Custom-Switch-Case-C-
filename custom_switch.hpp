@@ -99,7 +99,7 @@ private:
 #define CASE(condition) \
     _sw_obj_.add_case( \
         /* Predicate lambda: evaluates the condition. 'val' is the parameter name. */ \
-        [](const _sw_value_type_& val) -> bool { return (condition); }, \
+        [&](const _sw_value_type_& val) -> bool { return (condition); }, \
         /* Action lambda: contains the user's code for this case. Captures by reference. */ \
         [&]() -> void { \
             /* User's action code starts here... */
