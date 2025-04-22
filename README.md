@@ -150,3 +150,23 @@ int main() {
     return 0;
 }
 ```
+
+# Time testing
+## The Eternal Question in C++ and C-like Languages: Time
+
+The main issue in C++ and C-like languages (and in fact, in all programming languages) has always been **time**.
+
+I wrote a simple test with test data generation to compare which is faster: a standard `if-else` or my custom `switch-case`. (Of course, the answer is obvious.)
+
+According to my tests, I lost to C++.
+
+On the test data, the processing speed of `if-else` (12ms) was **110 times faster** than my custom `switch-case` (1326ms).
+
+You can try to optimize this further and test it using my `time_test.cpp` file.
+
+In the end, I both lost and won.
+
+If speed is your priority — definitely stick with C++ built-in functions.
+
+But if flexibility, code elegance, and readability are more important — use this custom switch-case.
+
