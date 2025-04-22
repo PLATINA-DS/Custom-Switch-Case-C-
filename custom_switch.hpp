@@ -1,11 +1,10 @@
 #ifndef CUSTOM_SWITCH_HPP
 #define CUSTOM_SWITCH_HPP
 
-#include <functional> 
-#include <vector>    
+#include <functional>
+#include <vector>
 #include <optional>   // requires C++ 17
-#include <utility>    
-using namespace std;
+#include <utility>
 
 // Represents a single 'case' branch within the custom switch.
 // Holds a `predicate` (condition) and an action to execute if the predicate is true.
@@ -13,8 +12,8 @@ template <typename T>
 class Case {
 public:
     // Constructor: Takes the predicate function and the action function.
-    Case(function<bool(const T&)> predicate, function<void()> action)
-        : predicate_(predicate), action_(action) {}
+    Case(std::function<bool(const T&)> predicate, std::function<void()> action)
+        : predicate_(std::move(predicate)), action_(std::move(action)) {} // Use std::move
 
     // Evaluates the predicate against the given value.
     // If the predicate returns true, executes the action and returns true.
@@ -28,8 +27,8 @@ public:
     }
 
 private:
-    function<bool(const T&)> predicate_; // The condition function (lambda).
-    function<void()> action_;             // The action function (lambda).
+    std::function<bool(const T&)> predicate_; // The condition function (lambda).
+    std::function<void()> action_;             // The action function (lambda).
 };
 
 // Represents the main 'switch' construct.
@@ -38,17 +37,17 @@ template <typename T>
 class Switch {
 public:
     // Constructor: Takes the value to be switched on (moved or copied).
-    Switch(T value) : value_(move(value)) {}
+    Switch(T value) : value_(std::move(value)) {} // Use std::move
 
     // Adds a case branch to this switch instance.
-    Switch& add_case(function<bool(const T&)> predicate, function<void()> action) {
-        cases_.emplace_back(predicate, action);
+    Switch& add_case(std::function<bool(const T&)> predicate, std::function<void()> action) {
+        cases_.emplace_back(std::move(predicate), std::move(action)); // Use std::move
         return *this; // Allows chaining, though not used directly with macros.
     }
 
     // Sets the default action to be executed if no cases match.
-    void add_default(function<void()> action) {
-        default_action_ = move(action);
+    void add_default(std::function<void()> action) {
+        default_action_ = std::move(action); // Use std::move
     }
 
     // Evaluates the switch logic:
@@ -69,8 +68,8 @@ public:
 
 private:
     T value_; // The value being switched on.
-    vector<Case<T>> cases_; // Stores all the defined case branches.
-    optional<function<void()>> default_action_; // Stores the optional default action.
+    std::vector<Case<T>> cases_; // Stores all the defined case branches.
+    std::optional<std::function<void()>> default_action_; // Stores the optional default action.
 };
 
 // --- Helper Macros for unique variable name generation ---
@@ -85,7 +84,7 @@ private:
 // Usage: SWITCH(my_variable) { ... } END_SWITCH
 #define SWITCH(x) \
     { /* Open scope for the switch block */ \
-        using SWITCH_VAR(_sw_value_type_) = decay_t<decltype(x)>; /* Deduce and clean the type of x */ \
+        using SWITCH_VAR(_sw_value_type_) = std::decay_t<decltype(x)>; /* Deduce and clean the type of x */ \
         auto SWITCH_VAR(_sw_obj_) = Switch<SWITCH_VAR(_sw_value_type_)>(x); /* Create the Switch object */ \
         auto& _sw_obj_ = SWITCH_VAR(_sw_obj_); /* Create a convenient alias for the Switch object */ \
         using _sw_value_type_ = SWITCH_VAR(_sw_value_type_); /* Create a convenient alias for the value type */ \
@@ -129,4 +128,4 @@ private:
     _sw_obj_.evaluate(); /* Trigger the evaluation of all cases/default */ \
 } /* Close the scope opened by the SWITCH macro */
 
-#endif 
+#endif // CUSTOM_SWITCH_HPP
